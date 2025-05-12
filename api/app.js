@@ -4,9 +4,18 @@ import { getDatabase, ref, get, push, remove, set } from 'firebase/database';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import session from 'express-session';
 import serverless from 'serverless-http';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const port = 3000;
+
+// Set up EJS
+app.set('view engine', 'ejs');
+app.set('views', join(__dirname, '..', 'views'));
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXSrvXlriajK-IMacwN4z9xY3mtkW5KPs",

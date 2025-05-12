@@ -5,7 +5,8 @@
             "src": "/api/app.js",
             "use": "@vercel/node",
             "config": {
-                "includeFiles": ["views/**"]
+                "includeFiles": ["views/**", "public/**"],
+                "nodeVersion": "18.x"
             }
         }
     ],
