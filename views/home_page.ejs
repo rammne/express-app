@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wisteria - Home</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Wisteria</div>
+        <div class="nav-user">
+            <span>Welcome, <%= user.email %></span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="new-post-form">
+            <form action="/submit-post" method="POST">
+                <textarea name="content" placeholder="What's happening?" required></textarea>
+                <button type="submit">Post</button>
+            </form>
+        </div>
+        
+        <div class="posts">
+            <% if (posts.length !== 0) { %>
+                <% posts.forEach(post => { %>
+                    <div class="post">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <i class="fas fa-user-circle"></i>
+                                <%= post.author %>
+                            </div>
+                            <div class="post-time">
+                                <%= new Date(post.timestamp).toLocaleString() %>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <%= post.content %>
+                        </div>
+                        
+                        <!-- Comment form -->
+                        <div class="comment-form">
+                            <form action="/posts/<%= post.id %>/comment" method="POST">
+                                <input type="text" name="content" placeholder="Write a comment..." required>
+                                <button type="submit"><i class="fas fa-comment"></i> Comment</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Comments section -->
+                        <div class="comments">
+                            <% post.comments.filter(comment => !comment.isReply).forEach(comment => { %>
+                                <div class="comment">
+                                    <div class="comment-header">
+                                        <div class="comment-author">
+                                            <i class="fas fa-user-circle"></i>
+                                            <%= comment.author %>
+                                        </div>
+                                        <div class="comment-time">
+                                            <%= new Date(comment.timestamp).toLocaleString() %>
+                                        </div>
+                                    </div>
+                                    <div class="comment-content">
+                                        <%= comment.content %>
+                                    </div>
+                                    
+                                    <!-- Reply form -->
+                                    <div class="reply-form">
+                                        <form action="/posts/<%= post.id %>/comments/<%= comment.id %>/reply" method="POST">
+                                            <input type="text" name="content" placeholder="Write a reply..." required>
+                                            <button type="submit"><i class="fas fa-reply"></i> Reply</button>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Replies -->
+                                    <div class="replies">
+                                        <% post.comments.filter(reply => reply.isReply && reply.replyTo === comment.id).forEach(reply => { %>
+                                            <div class="reply">
+                                                <div class="reply-header">
+                                                    <div class="reply-author">
+                                                        <i class="fas fa-user-circle"></i>
+                                                        <%= reply.author %>
+                                                    </div>
+                                                    <div class="reply-time">
+                                                        <%= new Date(reply.timestamp).toLocaleString() %>
+                                                    </div>
+                                                </div>
+                                                <div class="reply-content">
+                                                    <%= reply.content %>
+                                                </div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <h1 id="no-post-msg">There are no posts today.</h1>
+            <% } %>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/scripts/index.js"></script>
+</body>
+</html>
