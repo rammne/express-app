@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, get, push, remove, set } from 'firebase/database';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import session from 'express-session';
+import serverless from 'serverless-http';
 
 const app = express();
 const port = 3000;
@@ -160,3 +161,6 @@ app.post('/posts/:postId/comments/:commentId/reply', requireAuth, async (req, re
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
+
+export default app;
+export const handler = serverless(app);
