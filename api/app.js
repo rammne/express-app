@@ -53,19 +53,7 @@ app.use(session({
 // Middleware to check if user is authenticated
 const requireAuth = async (req, res, next) => {
   if (req.session.user) {
-    // Verify the session is still valid with Firebase
-    try {
-      const currentUser = auth.currentUser;
-      if (currentUser && currentUser.email === req.session.user.email) {
-        next();
-      } else {
-        req.session.destroy();
-        res.redirect('/login');
-      }
-    } catch (error) {
-      req.session.destroy();
-      res.redirect('/login');
-    }
+    next();
   } else {
     res.redirect('/login');
   }
@@ -80,7 +68,10 @@ app.post('/register', async (req, res) => {
   try {
     const { email, password } = req.body;
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    req.session.user = { email: userCredential.user.email };
+    req.session.user = { 
+      email: userCredential.user.email,
+      uid: userCredential.user.uid 
+    };
     res.redirect('/');
   } catch (error) {
     res.render('register.ejs', { error: error.message });
@@ -96,7 +87,10 @@ app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    req.session.user = { email: userCredential.user.email };
+    req.session.user = { 
+      email: userCredential.user.email,
+      uid: userCredential.user.uid 
+    };
     res.redirect('/');
   } catch (error) {
     res.render('login.ejs', { error: error.message });
@@ -105,9 +99,13 @@ app.post('/login', async (req, res) => {
 
 // Logout route
 app.get('/logout', (req, res) => {
-  req.session.destroy();
-  signOut(auth);
-  res.redirect('/login');
+  req.session.destroy(() => {
+    signOut(auth).then(() => {
+      res.redirect('/login');
+    }).catch(() => {
+      res.redirect('/login');
+    });
+  });
 });
 
 // Protected home route
