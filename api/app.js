@@ -15,7 +15,7 @@ const port = 3000;
 
 // Set up EJS
 app.set('view engine', 'ejs');
-// app.set('views', join(__dirname, '..', 'views'));
+app.set('views', join(__dirname, '..', 'views'));
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXSrvXlriajK-IMacwN4z9xY3mtkW5KPs",
@@ -37,16 +37,35 @@ const commentsRef = ref(db, 'comments');
 
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
+
+// Updated session configuration for serverless environment
 app.use(session({
   secret: 'your-secret-key',
-  resave: false,
-  saveUninitialized: false
+  resave: true,
+  saveUninitialized: true,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 }));
 
 // Middleware to check if user is authenticated
-const requireAuth = (req, res, next) => {
+const requireAuth = async (req, res, next) => {
   if (req.session.user) {
-    next();
+    // Verify the session is still valid with Firebase
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser && currentUser.email === req.session.user.email) {
+        next();
+      } else {
+        req.session.destroy();
+        res.redirect('/login');
+      }
+    } catch (error) {
+      req.session.destroy();
+      res.redirect('/login');
+    }
   } else {
     res.redirect('/login');
   }
